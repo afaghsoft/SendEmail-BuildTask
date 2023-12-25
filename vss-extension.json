@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "SendEmailTask",
     "name": "Send Email",
-    "version": "0.0.0",
+    "version": "1.5.2",
     "publisher": "rvo",
     "targets": [
         {

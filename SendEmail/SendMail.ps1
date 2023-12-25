@@ -3,9 +3,85 @@
     [bool] $isDebug = $false
 )
 
+# Splits the given string value with the given separators and
+# removes the empty entries.
+function Split-StringValue {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline)]
+        [string]$InputObject,
+        [string[]]$Separators = " "
+    )
+    
+    
+    process {
+        return $InputObject.Split($Separators, 
+            [System.StringSplitOptions]::RemoveEmptyEntries) |
+        ForEach-Object {
+            if ([string]::IsNullOrWhiteSpace($_)) {
+                return $null
+            }
+
+            return $_.Trim()
+        } | Where-Object { $null -ne $_ }
+    }
+}
+
+# fetches and returns the current git branch that we are on.
+# If the current directory that we are in at the moment, doesn't belong to
+# any git repository (AKA: does not have .git dir and its content), this
+# function will write the error using Write-Error cmdlet and returns $null.
+function Get-CurrentGitBranch {
+    [CmdletBinding()]
+    param (
+    )
+    
+    process {
+        # provided by TFS / Azure DevOps server itself, so we prioritize it.
+        if ($Env:BUILD_SOURCEBRANCHNAME -and $Env:BUILD_SOURCEBRANCHNAME.Trim()) {
+            return $Env:BUILD_SOURCEBRANCHNAME
+        }
+
+        $theBranch = (git branch 2>&1) -split "\n" | Where-Object { $_.StartsWith("*") }
+        if ($null -eq $theBranch) {
+            # putting this here just in case of exceptional situations (like not being in a dir with .git dir, etc).
+            # we might want to change the behavior of it in future.
+            return $null
+        }
+        elseif ($gitOutput -is [System.Management.Automation.ErrorRecord]) {
+            $gitOutput | Write-Error
+            return $null
+        }
+
+        $theBranch = ($theBranch -as [string]).Substring(2, $theBranch.Length - 2)
+
+        # are we in detached state?
+        # if yes, then simply invoking "git branch" won't make us reach the
+        # correct answer. 
+        if ($theBranch.StartsWith("(HEAD detached at")) {
+            $theBranch = (git show -s --pretty=%d HEAD 2>&1)
+            # The expected output for this command is something like this:
+            #  (HEAD, tag: v1.2.10, origin/Release1.2)
+            # we better not rely on the "tag: ..." part (since the branch might have no tag)
+            # and just find the branch ourselves.
+            $myStrs = $theBranch | Split-StringValue -Separators @(", ") 
+            for ($i = 1; $i -lt $myStrs.Count; $i++) {
+                if (($myStrs[$i] -as [string]).Contains("/")) {
+                    # the last index will be the correct branch name.
+                    $theBranch = ($myStrs[$i]).Split('/')[-1].Trim(")")
+                    break
+                }
+            }
+        }
+
+        return $theBranch
+    }
+}
+
 function SendMailFromPipeline
 {
 
+    $BranchFilter = Get-VstsInput -Name 'BranchFilter'
     $To = Get-VstsInput -Name 'To' -Require
     $Subject = Get-VstsInput -Name 'Subject' -Require
     $Body = Get-VstsInput -Name 'Body' -Require
@@ -24,6 +100,7 @@ function SendMailFromPipeline
     $MailParams = @{}
 
     Write-Output "Input Vars"
+    Write-Output "Branch Filter: $BranchFilter"
     Write-Output "Send Email To: $To"
     Write-Output "Send Email CC: $CC"
     Write-Output "Send Email BCC: $BCC"
@@ -37,7 +114,27 @@ function SendMailFromPipeline
     Write-Output "Add Attachment?: $AddAttachment"
     Write-Output "Attachment: $Attachment"
 
+    if ($BranchFilter -and !($BranchFilter -eq "*" -or $BranchFilter -eq "**")) {
+        $currentGitBranch = Get-CurrentGitBranch
+        if (!$currentGitBranch) {
+            Write-Output "Couldn't determine current git branch!"
+            return
+        }
+        
+        $BranchFilters = $BranchFilter.Split(";").Trim()
+        $matchedOnce = $false
+        foreach ($currentFilter in $BranchFilters) {
+            if ($currentGitBranch -like $currentFilter) {
+                $matchedOnce = $true
+                break
+            }
+        }
 
+        if (!$matchedOnce) {
+            Write-Output "Couldn't match current git branch '$currentGitBranch' with any filters applied!"
+            return
+        }
+    }
 
     [string[]]$toMailAddresses=$To.Split(';');
     [string[]]$ccMailAddresses=$CC.Split(';');

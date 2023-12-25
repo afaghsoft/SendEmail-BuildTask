@@ -8,9 +8,9 @@
   "category": "Utility",
   "author": "Rene van Osnabrugge",
   "version": {
-    "Major": 0,
-    "Minor": 0,
-    "Patch": 0
+    "Major": 1,
+    "Minor": 5,
+    "Patch": 2
   },
   "demands":  [],
   "minimumAgentVersion": "1.83.0",
@@ -28,6 +28,15 @@
 
   ],
    "inputs": [
+    {
+      "name": "BranchFilter",
+      "type": "string",
+      "label": "Branch Filter",
+      "defaultValue": "",
+      "required": true,
+      "groupName": "mailsettings",
+      "helpMarkDown": "The filter to check for the current branch. At least one of these filters (wildcard) should match the current branch. Separate by semicolon (;)"
+    },
     {
       "name": "To",
       "type": "string",
