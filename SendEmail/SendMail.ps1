@@ -114,6 +114,12 @@ function Send-MailFromPipeline {
     $CC = Get-VstsInput -Name 'CC'
     $BCC = Get-VstsInput -Name 'BCC'
 
+
+    if (!$SmtpServer -or $SmtpServer -eq "none") {
+        Write-Output "Server address is set to 'none'. Doing nothing!"
+        return
+    }
+
     # Additional parameters
     $BranchFilter = Get-VstsInput -Name 'BranchFilter'
     $ZipFilePathContainer = Get-VstsInput -Name 'ZipFilePathContainer'

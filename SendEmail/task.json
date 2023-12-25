@@ -2,15 +2,15 @@
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "a41d805b-80c4-4b20-924d-b8d1cca9a43f",
   "name": "SendEmail",
-  "friendlyName": "#{PrivatePublicExtension}#Send email",
+  "friendlyName": "Send email task",
   "description": "Send an email to 1 or more addresses via the SMTP server you provide",
-  "helpMarkDown": "Version: #{PrivatePublicExtension}##{Build.BuildNumber}#. [More information](http://github.com/rvanosnabrugge)",
+  "helpMarkDown": "Version: 1. [More information](http://github.com/AfaghSoft)",
   "category": "Utility",
-  "author": "Rene van Osnabrugge",
+  "author": "AfaghSoft",
   "version": {
     "Major": 1,
     "Minor": 5,
-    "Patch": 3
+    "Patch": 4
   },
   "demands": [],
   "minimumAgentVersion": "1.83.0",

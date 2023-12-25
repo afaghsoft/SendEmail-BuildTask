@@ -2,8 +2,8 @@
     "manifestVersion": 1,
     "id": "SendEmailTask",
     "name": "Send Email",
-    "version": "1.5.3",
-    "publisher": "rvo",
+    "version": "1.5.4",
+    "publisher": "AfaghSoft",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
@@ -25,7 +25,7 @@
     "icons": {
         "default": "extension/images/extension-icon-small.png",
         "large": "extension/images/extension-icon.png"
-      },
+    },
     "content": {
         "details": {
             "path": "README.md"
@@ -41,29 +41,29 @@
     ],
     "links": {
         "blog": {
-            "uri": "http://roadtoalm.com"
+            "uri": "https://github.com/ALiwoto"
         },
         "source": {
-            "uri": "https://github.com/renevanosnabrugge/SendEmail-BuildTask"
+            "uri": "https://github.com/AfaghSoft/SendEmail-BuildTask"
         },
         "company": {
-            "uri": "https://www.xpirit.com"
+            "uri": "https://afaghsoft.ir/"
         },
         "support": {
-            "uri": "https://github.com/renevanosnabrugge/SendEmail-BuildTask/issues"
-          },
-          "issues": {
-            "uri": "https://github.com/renevanosnabrugge/SendEmail-BuildTask/issues"
-          }        
+            "uri": "https://github.com/AfaghSoft/SendEmail-BuildTask/issues"
+        },
+        "issues": {
+            "uri": "https://github.com/AfaghSoft/SendEmail-BuildTask/issues"
+        }
     },
     "repository": {
         "type": "git",
-        "uri": "https://github.com/renevanosnabrugge/SendEmail-BuildTask"
-      },    
+        "uri": "https://github.com/AfaghSoft/SendEmail-BuildTask"
+    },
     "branding": {
         "color": "rgb(34, 34, 72)",
         "theme": "dark"
-      },
+    },
     "contributions": [
         {
             "id": "send-email-build-task",
