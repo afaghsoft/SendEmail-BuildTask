@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "SendEmailTask",
     "name": "Send Email",
-    "version": "1.5.4",
+    "version": "1.5.5",
     "publisher": "AfaghSoft",
     "targets": [
         {

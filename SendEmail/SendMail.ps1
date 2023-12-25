@@ -115,8 +115,8 @@ function Send-MailFromPipeline {
     $BCC = Get-VstsInput -Name 'BCC'
 
 
-    if (!$SmtpServer -or $SmtpServer -eq "none") {
-        Write-Output "Server address is set to 'none'. Doing nothing!"
+    if (!$SmtpServer -or $SmtpServer -eq "none" -or !$From -or $From -eq "none") {
+        Write-Output "Server-address/From is set to 'none'. Doing nothing!"
         return
     }
 
