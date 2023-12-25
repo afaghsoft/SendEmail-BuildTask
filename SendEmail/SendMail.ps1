@@ -3,6 +3,8 @@
     [bool] $isDebug = $false
 )
 
+$global:PATTERN_ZIP_FILE_OUTPUT = "(\{\{\s*ZIP_FILE_OUTPUT\s*\}\})" # e.g. {{ Git:info }}
+
 # Splits the given string value with the given separators and
 # removes the empty entries.
 function Split-StringValue {
@@ -78,10 +80,25 @@ function Get-CurrentGitBranch {
     }
 }
 
-function SendMailFromPipeline
-{
+# returns file path(s) for the output zip file. If it exists.
+function Get-ZipFileOutputPath {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [string]$OutputPathContainer = $null
+    )
+    
+    process {
+        if (!$OutputPathContainer -or !(Test-Path $OutputPathContainer)) {
+            return "Unknown Path"
+        }
 
-    $BranchFilter = Get-VstsInput -Name 'BranchFilter'
+        $fileContent = Get-Content -Path $OutputPathContainer
+        return $fileContent.Split(";")[0].Trim()
+    }
+}
+
+function Send-MailFromPipeline {
     $To = Get-VstsInput -Name 'To' -Require
     $Subject = Get-VstsInput -Name 'Subject' -Require
     $Body = Get-VstsInput -Name 'Body' -Require
@@ -96,6 +113,14 @@ function SendMailFromPipeline
     $Attachment = Get-VstsInput -Name 'Attachment'
     $CC = Get-VstsInput -Name 'CC'
     $BCC = Get-VstsInput -Name 'BCC'
+
+    # Additional parameters
+    $BranchFilter = Get-VstsInput -Name 'BranchFilter'
+    $ZipFilePathContainer = Get-VstsInput -Name 'ZipFilePathContainer'
+
+    $Body = [Regex]::Replace($Body, $global:PATTERN_ZIP_FILE_OUTPUT, { 
+        return Get-ZipFileOutputPath -OutputPathContainer $ZipFilePathContainer
+    })
 
     $MailParams = @{}
 
@@ -120,7 +145,7 @@ function SendMailFromPipeline
             Write-Output "Couldn't determine current git branch!"
             return
         }
-        
+
         $BranchFilters = $BranchFilter.Split(";").Trim()
         $matchedOnce = $false
         foreach ($currentFilter in $BranchFilters) {
@@ -136,60 +161,51 @@ function SendMailFromPipeline
         }
     }
 
-    [string[]]$toMailAddresses=$To.Split(';');
-    [string[]]$ccMailAddresses=$CC.Split(';');
-    [string[]]$bccMailAddresses=$BCC.Split(';');
+    [string[]]$toMailAddresses = $To.Split(';');
+    [string[]]$ccMailAddresses = $CC.Split(';');
+    [string[]]$bccMailAddresses = $BCC.Split(';');
 
     [bool]$BodyAsHtmlBool = [System.Convert]::ToBoolean($BodyAsHtml)
-    [bool]$UseSSLBool =  [System.Convert]::ToBoolean($UseSSL)
-    [bool]$AddAttachmentBool =  [System.Convert]::ToBoolean($AddAttachment)
+    [bool]$UseSSLBool = [System.Convert]::ToBoolean($UseSSL)
+    [bool]$AddAttachmentBool = [System.Convert]::ToBoolean($AddAttachment)
 
-    $MailParams.Add("To",$toMailAddresses);
+    $MailParams.Add("To", $toMailAddresses)
     if ($null -ne $ccMailAddresses -and $ccMailAddresses[0] -ne "") { 
-        $MailParams.Add("Cc",$ccMailAddresses);
+        $MailParams.Add("Cc", $ccMailAddresses)
     }
 
     if ($null -ne $bccMailAddresses -and $bccMailAddresses[0] -ne "") { 
-        $MailParams.Add("Bcc",$bccMailAddresses);
+        $MailParams.Add("Bcc", $bccMailAddresses)
     }
-    $MailParams.Add("From",$From);
+    $MailParams.Add("From", $From)
 
-    $Subjectxpanded = $ExecutionContext.InvokeCommand.ExpandString($Subject) 
-    $MailParams.Add("Subject",$Subjectxpanded);
+    $SubjectExpanded = $ExecutionContext.InvokeCommand.ExpandString($Subject) 
+    $MailParams.Add("Subject", $SubjectExpanded)
 
     $BodyExpanded = $ExecutionContext.InvokeCommand.ExpandString($Body) 
-    $MailParams.Add("Body",$BodyExpanded);
+    $MailParams.Add("Body", $BodyExpanded)
 
-    $MailParams.Add("SmtpServer",$SmtpServer);
-    $MailParams.Add("Port",$SmtpPort);
-    $MailParams.Add("Encoding", "UTF8"); 
+    $MailParams.Add("SmtpServer", $SmtpServer)
+    $MailParams.Add("Port", $SmtpPort)
+    $MailParams.Add("Encoding", "UTF8")
 
-    if (!([string]::IsNullOrEmpty($SmtpUsername)))
-    {
+    if (!([string]::IsNullOrEmpty($SmtpUsername))) {
         $securePassword = ConvertTo-SecureString $SmtpPassword -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential ($SmtpUsername, $securePassword)
-        $MailParams.Add("Credential",$credential);
+        $MailParams.Add("Credential", $credential)
     }
 
-    if($BodyAsHtmlBool)
-    {
-        $MailParams.Add("BodyAsHtml",$true);
-
+    if ($BodyAsHtmlBool) {
+        $MailParams.Add("BodyAsHtml", $true)
     }
 
-    if($UseSSLBool)
-    {
-        $MailParams.Add("UseSSL",$true);
-
+    if ($UseSSLBool) {
+        $MailParams.Add("UseSSL", $true)
     }
 
-    if($AddAttachmentBool)
-    {
-        $MailParams.Add("Attachments",$Attachment);
-
+    if ($AddAttachmentBool) {
+        $MailParams.Add("Attachments", $Attachment)
     }
-
-
 
     Send-MailMessage @MailParams
 }
@@ -197,13 +213,10 @@ function SendMailFromPipeline
 
 if ($isDebug -eq $false) {
     try {
-        SendMailFromPipeline
+        Send-MailFromPipeline
     }
-    catch{
+    catch {
         throw
     }
-}   
-
-
-
+}
 

@@ -10,12 +10,12 @@
   "version": {
     "Major": 1,
     "Minor": 5,
-    "Patch": 2
+    "Patch": 3
   },
-  "demands":  [],
+  "demands": [],
   "minimumAgentVersion": "1.83.0",
-	"groups": [
-        {
+  "groups": [
+    {
       "name": "mailsettings",
       "displayName": "Email settings",
       "isExpanded": true
@@ -24,19 +24,14 @@
       "name": "smtpsettings",
       "displayName": "SMTP Settings",
       "isExpanded": true
-    }
-
-  ],
-   "inputs": [
-    {
-      "name": "BranchFilter",
-      "type": "string",
-      "label": "Branch Filter",
-      "defaultValue": "",
-      "required": true,
-      "groupName": "mailsettings",
-      "helpMarkDown": "The filter to check for the current branch. At least one of these filters (wildcard) should match the current branch. Separate by semicolon (;)"
     },
+    {
+      "name": "additionalsettings",
+      "displayName": "Additional Settings",
+      "isExpanded": true
+    }
+  ],
+  "inputs": [
     {
       "name": "To",
       "type": "string",
@@ -81,7 +76,6 @@
       "required": true,
       "groupName": "mailsettings",
       "helpMarkDown": "The subject of the email"
-
     },
     {
       "name": "Body",
@@ -93,9 +87,8 @@
       "helpMarkDown": "The body of the email",
       "properties": {
         "resizable": true,
-        "rows" : "20"
+        "rows": "20"
       }
-
     },
     {
       "name": "BodyAsHtml",
@@ -123,7 +116,6 @@
       "required": false,
       "groupName": "mailsettings",
       "helpMarkDown": "The absolute path to the file"
-
     },
     {
       "name": "SmtpServer",
@@ -142,7 +134,7 @@
       "required": false,
       "groupName": "smtpsettings",
       "helpMarkDown": "Port to the SMTP server"
-    },	
+    },
     {
       "name": "SmtpUsername",
       "type": "string",
@@ -161,7 +153,7 @@
       "groupName": "smtpsettings",
       "helpMarkDown": "Password for the SMTP server"
     },
-	{
+    {
       "name": "UseSSL",
       "type": "boolean",
       "label": "SMTP Use SSL?",
@@ -169,8 +161,25 @@
       "required": false,
       "groupName": "smtpsettings",
       "helpMarkDown": "Indication whether to use SSL for connecting to the SMTP server"
+    },
+    {
+      "name": "BranchFilter",
+      "type": "string",
+      "label": "Branch Filter",
+      "defaultValue": "*",
+      "required": true,
+      "groupName": "additionalsettings",
+      "helpMarkDown": "The filter to check for the current branch. At least one of these filters (wildcard) should match the current branch. Separate by semicolon (;)"
+    },
+    {
+      "name": "ZipFilePathContainer",
+      "type": "string",
+      "label": "Zip Output File Path Container",
+      "defaultValue": ".zip_output_path",
+      "required": false,
+      "groupName": "additionalsettings",
+      "helpMarkDown": "The file name for reading output path(s) of the final zip file(s) to. You can use {{ ZIP_FILE_OUTPUT }} in your body and we will replace it with the content of this file."
     }
-
   ],
   "instanceNameFormat": "Send an email with subject $(Subject)",
   "execution": {

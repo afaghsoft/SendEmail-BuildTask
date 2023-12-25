@@ -28,4 +28,4 @@ function Get-VstsInput
 
 . .\..\SendEmail\SendMail.ps1 -isDebug $true
 
-SendMailFromPipeline
+Send-MailFromPipeline
